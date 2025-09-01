@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta 2025 Growth Fund Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1877f2 0%, #42a5f5 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .input-group input {
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #1877f2;
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(135deg, #1877f2 0%, #42a5f5 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .kpi-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        
+        .kpi-card h3 {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+        
+        .kpi-subtitle {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .status-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .status-card.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+        
+        .status-card h3,
+        .status-card .kpi-value,
+        .status-card .kpi-subtitle {
+            color: white;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #212529;
+        }
+        
+        .incentive-breakdown {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .incentive-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .incentive-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .tier-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .tier-card {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .tier-card h4 {
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Meta 2025 Growth Fund Calculator</h1>
+            <p>성장지원금 산출 및 예상 거래액 분석 대시보드</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h2 style="margin-bottom: 20px; color: #495057;">광고주별 2025년 누적 거래액 입력 (KRW)</h2>
+                <div class="tier-info">
+                    <div class="tier-card">
+                        <h4>Spend Baseline</h4>
+                        <p>USD $56,298,100 (₩81,632,245,000)</p>
+                    </div>
+                    <div class="tier-card">
+                        <h4>Tier 1 → Tier 2</h4>
+                        <p>USD $72,624,549 (₩105,305,595,500)</p>
+                    </div>
+                </div>
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="jan">1월</label>
+                        <input type="number" id="jan" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="feb">2월</label>
+                        <input type="number" id="feb" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="mar">3월</label>
+                        <input type="number" id="mar" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="apr">4월</label>
+                        <input type="number" id="apr" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="may">5월</label>
+                        <input type="number" id="may" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="jun">6월</label>
+                        <input type="number" id="jun" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="jul">7월</label>
+                        <input type="number" id="jul" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="aug">8월</label>
+                        <input type="number" id="aug" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="sep">9월</label>
+                        <input type="number" id="sep" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="oct">10월</label>
+                        <input type="number" id="oct" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="nov">11월</label>
+                        <input type="number" id="nov" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="dec">12월</label>
+                        <input type="number" id="dec" placeholder="0" min="0">
+                    </div>
+                </div>
+                <button class="calculate-btn" onclick="calculateGrowthFund()">성장지원금 계산하기</button>
+            </div>
+            
+            <div id="results" class="hidden">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <h3>2025 누적 거래액</h3>
+                        <div class="kpi-value" id="cumulative-krw">₩0</div>
+                        <div class="kpi-subtitle" id="cumulative-usd">$0</div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <h3>2025 연말 예상 거래액</h3>
+                        <div class="kpi-value" id="projected-krw">₩0</div>
+                        <div class="kpi-subtitle" id="projected-usd">$0</div>
+                    </div>
+                    
+                    <div class="kpi-card status-card" id="baseline-status">
+                        <h3>Baseline 상태</h3>
+                        <div class="kpi-value" id="baseline-status-text">확인 중</div>
+                        <div class="kpi-subtitle" id="baseline-details"></div>
+                    </div>
+                    
+                    <div class="kpi-card" id="shortage-card">
+                        <h3 id="shortage-title">Baseline까지 부족 금액</h3>
+                        <div class="kpi-value" id="shortage-usd">$0</div>
+                        <div class="kpi-subtitle" id="shortage-krw">₩0</div>
+                    </div>
+                </div>
+                
+                <div id="incentive-section" class="hidden">
+                    <div class="kpi-grid">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                            <h3 style="color: white;">총 성장지원금</h3>
+                            <div class="kpi-value" style="color: white;" id="total-incentive-usd">$0</div>
+                            <div class="kpi-subtitle" style="color: white;" id="total-incentive-krw">₩0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="incentive-breakdown">
+                        <h3 style="margin-bottom: 15px;">성장지원금 상세 계산</h3>
+                        <div class="incentive-item">
+                            <span>Tier 1 범위 내 금액 (USD)</span>
+                            <span id="tier1-amount">$0</span>
+                        </div>
+                        <div class="incentive-item">
+                            <span>Tier 1 인센티브 (6%)</span>
+                            <span id="tier1-incentive">$0</span>
+                        </div>
+                        <div class="incentive-item">
+                            <span>Tier 2 초과 금액 (USD)</span>
+                            <span id="tier2-amount">$0</span>
+                        </div>
+                        <div class="incentive-item">
+                            <span>Tier 2 인센티브 (9%)</span>
+                            <span id="tier2-incentive">$0</span>
+                        </div>
+                        <div class="incentive-item">
+                            <span>총 성장지원금</span>
+                            <span id="total-breakdown">$0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">월별 누적 거래액 및 예상 추이</h3>
+                    <canvas id="spendChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const EXCHANGE_RATE = 1450;
+        const BASELINE_USD = 56298100;
+        const TIER2_THRESHOLD_USD = 72624549;
+        const TIER1_RATE = 0.06;
+        const TIER2_RATE = 0.09;
+        
+        let chart = null;
+        
+        function formatNumber(num) {
+            return new Intl.NumberFormat('ko-KR').format(Math.round(num));
+        }
+        
+        function formatCurrency(num, currency = 'KRW') {
+            if (currency === 'USD') {
+                return '$' + formatNumber(num);
+            } else {
+                return '₩' + formatNumber(num);
+            }
+        }
+        
+        function calculateGrowthFund() {
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+            const monthlyData = [];
+            let cumulativeSpend = 0;
+            let currentMonth = 8; // 9월 (0-based index)
+            
+            // 월별 데이터 수집 및 누적 계산
+            for (let i = 0; i < months.length; i++) {
+                const value = parseFloat(document.getElementById(months[i]).value) || 0;
+                cumulativeSpend += value;
+                monthlyData.push({
+                    month: i + 1,
+                    monthlySpend: value,
+                    cumulativeSpend: cumulativeSpend,
+                    isActual: i <= currentMonth
+                });
+            }
+            
+            // YTD 누적 거래액 (9월까지)
+            const ytdSpend = monthlyData[currentMonth].cumulativeSpend;
+            const ytdSpendUSD = ytdSpend / EXCHANGE_RATE;
+            
+            // 연말 예상 거래액 (YTD 기준 연간 환산)
+            const projectedAnnualSpend = (ytdSpend / (currentMonth + 1)) * 12;
+            const projectedAnnualSpendUSD = projectedAnnualSpend / EXCHANGE_RATE;
+            
+            // Baseline 검증
+            const baselineShortageUSD = Math.max(0, BASELINE_USD - projectedAnnualSpendUSD);
+            const tier2ShortageUSD = Math.max(0, TIER2_THRESHOLD_USD - projectedAnnualSpendUSD);
+            const isBaselineMet = projectedAnnualSpendUSD >= BASELINE_USD;
+            
+            // 결과 표시
+            updateResults(ytdSpend, ytdSpendUSD, projectedAnnualSpend, projectedAnnualSpendUSD, 
+                         baselineShortageUSD, tier2ShortageUSD, isBaselineMet);
+            
+            // 차트 업데이트
+            updateChart(monthlyData, projectedAnnualSpend);
+            
+            document.getElementById('results').classList.remove('hidden');
+        }
+        
+        function updateResults(ytdSpend, ytdSpendUSD, projectedSpend, projectedSpendUSD, 
+                             baselineShortage, tier2Shortage, isBaselineMet) {
+            // 기본 KPI 업데이트
+            document.getElementById('cumulative-krw').textContent = formatCurrency(ytdSpend);
+            document.getElementById('cumulative-usd').textContent = formatCurrency(ytdSpendUSD, 'USD');
+            document.getElementById('projected-krw').textContent = formatCurrency(projectedSpend);
+            document.getElementById('projected-usd').textContent = formatCurrency(projectedSpendUSD, 'USD');
+            
+            // Baseline 상태 업데이트
+            const baselineStatusCard = document.getElementById('baseline-status');
+            const baselineStatusText = document.getElementById('baseline-status-text');
+            const baselineDetails = document.getElementById('baseline-details');
+            
+            if (isBaselineMet) {
+                baselineStatusCard.classList.remove('warning');
+                baselineStatusText.textContent = 'Baseline 충족';
+                baselineDetails.textContent = '성장지원금 산출 가능';
+            } else {
+                baselineStatusCard.classList.add('warning');
+                baselineStatusText.textContent = 'Baseline 미충족';
+                baselineDetails.textContent = '추가 광고비 필요';
+            }
+            
+            // 부족 금액 업데이트
+            const shortageCard = document.getElementById('shortage-card');
+            const shortageTitle = document.getElementById('shortage-title');
+            const shortageUSD = document.getElementById('shortage-usd');
+            const shortageKRW = document.getElementById('shortage-krw');
+            
+            if (isBaselineMet) {
+                if (tier2Shortage > 0) {
+                    shortageTitle.textContent = 'Tier 2까지 부족 금액';
+                    shortageUSD.textContent = formatCurrency(tier2Shortage, 'USD');
+                    shortageKRW.textContent = formatCurrency(tier2Shortage * EXCHANGE_RATE);
+                } else {
+                    shortageTitle.textContent = 'Tier 2 초과 달성';
+                    shortageUSD.textContent = formatCurrency(projectedSpendUSD - TIER2_THRESHOLD_USD, 'USD');
+                    shortageKRW.textContent = formatCurrency((projectedSpendUSD - TIER2_THRESHOLD_USD) * EXCHANGE_RATE);
+                }
+            } else {
+                shortageTitle.textContent = 'Baseline까지 부족 금액';
+                shortageUSD.textContent = formatCurrency(baselineShortage, 'USD');
+                shortageKRW.textContent = formatCurrency(baselineShortage * EXCHANGE_RATE);
+            }
+            
+            // 인센티브 계산 및 표시
+            const incentiveSection = document.getElementById('incentive-section');
+            if (isBaselineMet) {
+                calculateIncentive(projectedSpendUSD);
+                incentiveSection.classList.remove('hidden');
+            } else {
+                incentiveSection.classList.add('hidden');
+            }
+        }
+        
+        function calculateIncentive(projectedSpendUSD) {
+            const tier1Max = TIER2_THRESHOLD_USD - BASELINE_USD;
+            const spendAboveBaseline = projectedSpendUSD - BASELINE_USD;
+            
+            const tier1Amount = Math.min(spendAboveBaseline, tier1Max);
+            const tier2Amount = Math.max(0, spendAboveBaseline - tier1Max);
+            
+            const tier1Incentive = tier1Amount * TIER1_RATE;
+            const tier2Incentive = tier2Amount * TIER2_RATE;
+            const totalIncentive = tier1Incentive + tier2Incentive;
+            
+            // 인센티브 결과 업데이트
+            document.getElementById('total-incentive-usd').textContent = formatCurrency(totalIncentive, 'USD');
+            document.getElementById('total-incentive-krw').textContent = formatCurrency(totalIncentive * EXCHANGE_RATE);
+            
+            // 상세 계산 업데이트
+            document.getElementById('tier1-amount').textContent = formatCurrency(tier1Amount, 'USD');
+            document.getElementById('tier1-incentive').textContent = formatCurrency(tier1Incentive, 'USD');
+            document.getElementById('tier2-amount').textContent = formatCurrency(tier2Amount, 'USD');
+            document.getElementById('tier2-incentive').textContent = formatCurrency(tier2Incentive, 'USD');
+            document.getElementById('total-breakdown').textContent = formatCurrency(totalIncentive, 'USD');
+        }
+        
+        function updateChart(monthlyData, projectedAnnualSpend) {
+            const ctx = document.getElementById('spendChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            const labels = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+            const actualData = monthlyData.map(d => d.isActual ? d.cumulativeSpend : null);
+            const projectedData = monthlyData.map((d, i) => {
+                if (i <= 8) return d.cumulativeSpend; // 9월까지는 실제 데이터
+                return (projectedAnnualSpend / 12) * (i + 1); // 10월부터는 예상 데이터
+            });
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '실제 누적 거래액 (KRW)',
+                            data: actualData,
+                            borderColor: '#1877f2',
+                            backgroundColor: 'rgba(24, 119, 242, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#1877f2'
+                        },
+                        {
+                            label: '예상 누적 거래액 (KRW)',
+                            data: projectedData,
+                            borderColor: '#42a5f5',
+                            backgroundColor: 'rgba(66, 165, 245, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 3,
+                            pointBackgroundColor: '#42a5f5'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₩' + (value / 1000000000).toFixed(0) + 'B';
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
+        // 샘플 데이터로 초기화
+        function loadSampleData() {
+            const sampleData = [
+                8000000000,  // 1월
+                7500000000,  // 2월
+                9200000000,  // 3월
+                8800000000,  // 4월
+                9500000000,  // 5월
+                10200000000, // 6월
+                11000000000, // 7월
+                10500000000, // 8월
+                9800000000   // 9월
+            ];
+            
+            const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep'];
+            months.forEach((month, index) => {
+                if (sampleData[index]) {
+                    document.getElementById(month).value = sampleData[index];
+                }
+            });
+        }
+        
+        // 페이지 로드 시 샘플 데이터 로드
+        window.onload = function() {
+            loadSampleData();
+            calculateGrowthFund();
+        };
+    </script>
+</body>
+</html>
